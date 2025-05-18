@@ -49,9 +49,18 @@ public class SimCardController {
     RestTemplate restTemplate = new RestTemplate();
     Map<String, Object> response = restTemplate.postForObject(url, request, Map.class);
 
+    // make sure success is not null
+    boolean success;
+    try {
+      success = (boolean) response.get("success");
+    } catch (NullPointerException e) {
+      System.out.println("The activation success could not be found.");
+      return;
+    }
+
     // add new record to repository
     repository.save(new ActivationRecord(activationReq.getIccid(),
             activationReq.getCustomerEmail(),
-            (boolean) response.get("success")));
+            success));
   }
 }
