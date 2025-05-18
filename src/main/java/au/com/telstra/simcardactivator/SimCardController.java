@@ -3,13 +3,16 @@ package au.com.telstra.simcardactivator;
 import au.com.telstra.simcardactivator.database.ActivationRecord;
 import au.com.telstra.simcardactivator.database.ActivationRecordRepository;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class SimCardController {
@@ -62,5 +65,23 @@ public class SimCardController {
     repository.save(new ActivationRecord(activationReq.getIccid(),
             activationReq.getCustomerEmail(),
             success));
+  }
+
+  @GetMapping(path = "/query")
+  public String query(@RequestParam(value = "simCardId") Long simCardId) {
+    // look for the record with the given id.
+    Optional<ActivationRecord> result = repository.findById(simCardId);
+
+    if (result.isPresent()) {
+      ActivationRecord record = result.get();
+      Map<String, Object> response = new HashMap<>();
+      response.put("iccid", record.getIccid());
+      response.put("customerEmail", record.getCustomerEmail());
+      response.put("active", record.isActive());
+      return response.toString();
+    } else {
+      return "Sorry, we couldn't find a record matching that SIM Card ID.";
+    }
+
   }
 }
